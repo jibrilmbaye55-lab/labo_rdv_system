@@ -69,7 +69,7 @@ def init_db():
     conn.commit()
     conn.close()
 
-# 🔥 IMPORTANT POUR RENDER
+# 🔥 IMPORTANT (Render)
 init_db()
 
 # =========================
@@ -80,14 +80,11 @@ def home():
     return redirect("/labo")
 
 # =========================
-# 🔥 DEBUG TEMPLATES
+# ✅ PAGE LABO (FIX FINAL)
 # =========================
 @app.route("/labo")
 def labo_home():
-    try:
-        return "FICHIERS TEMPLATES : " + str(os.listdir("templates"))
-    except Exception as e:
-        return f"ERREUR DOSSIER : {e}"
+    return render_template("labo_home.html")
 
 # =========================
 # 🧪 RECLAMATION
@@ -152,6 +149,7 @@ def submit_rdv():
     conn = get_db_connection()
     cursor = conn.cursor()
 
+    # Créneaux 8h → 11h
     slots = []
     for h in range(8, 11):
         for m in [0, 15, 30, 45]:
