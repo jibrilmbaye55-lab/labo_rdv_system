@@ -71,7 +71,7 @@ def init_db():
 init_db()
 
 # =========================
-# PDF
+# PDF AVEC QR CODE 🔥
 # =========================
 def generate_pdf(nom, prenom, date, heure, numero_ticket):
     filename = f"ticket_{nom}_{int(datetime.now().timestamp())}.pdf"
@@ -81,6 +81,7 @@ def generate_pdf(nom, prenom, date, heure, numero_ticket):
     styles = getSampleStyleSheet()
     elements = []
 
+    # LOGO
     logo_path = os.path.join(BASE_DIR, "static/logo_labo.png")
     if os.path.exists(logo_path):
         elements.append(Image(logo_path, width=80, height=50))
@@ -105,6 +106,16 @@ def generate_pdf(nom, prenom, date, heure, numero_ticket):
     ]))
 
     elements.append(table)
+
+    # =========================
+    # 🔥 QR CODE AJOUTÉ ICI
+    # =========================
+    qr_path = os.path.join(BASE_DIR, "static/qr_labo_logo.png")
+    if os.path.exists(qr_path):
+        elements.append(Spacer(1, 20))
+        elements.append(Paragraph("Scanner pour reprendre un rendez-vous :", styles['Normal']))
+        elements.append(Spacer(1, 10))
+        elements.append(Image(qr_path, width=100, height=100))
 
     elements.append(Spacer(1, 20))
     elements.append(Paragraph("Merci de vous presenter a l'heure.", styles['Normal']))
@@ -276,43 +287,7 @@ def admin():
     return render_template("admin.html", rdvs=rdvs, reclamations=reclamations)
 
 # =========================
-# ACTIONS
-# =========================
-@app.route('/traiter_reclamation/<int:id>')
-def traiter_reclamation(id):
-    conn = get_db()
-    cursor = conn.cursor()
-
-    cursor.execute("UPDATE reclamations SET statut='Traité' WHERE id=?", (id,))
-    conn.commit()
-    conn.close()
-
-    return redirect('/admin')
-
-@app.route('/delete_rdv/<int:id>')
-def delete_rdv(id):
-    conn = get_db()
-    cursor = conn.cursor()
-
-    cursor.execute("DELETE FROM rendezvous WHERE id=?", (id,))
-    conn.commit()
-    conn.close()
-
-    return redirect('/admin')
-
-@app.route('/delete_reclamation/<int:id>')
-def delete_reclamation(id):
-    conn = get_db()
-    cursor = conn.cursor()
-
-    cursor.execute("DELETE FROM reclamations WHERE id=?", (id,))
-    conn.commit()
-    conn.close()
-
-    return redirect('/admin')
-
-# =========================
-# RUN (RENDER COMPATIBLE)
+# RUN
 # =========================
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
