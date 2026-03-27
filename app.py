@@ -79,13 +79,15 @@ init_db()
 def home():
     return redirect("/labo")
 
-# 🔥 DEBUG VERSION (IMPORTANT)
+# =========================
+# 🔥 DEBUG TEMPLATES
+# =========================
 @app.route("/labo")
 def labo_home():
     try:
-        return render_template("labo_home.html")
+        return "FICHIERS TEMPLATES : " + str(os.listdir("templates"))
     except Exception as e:
-        return f"ERREUR TEMPLATE : {e}"
+        return f"ERREUR DOSSIER : {e}"
 
 # =========================
 # 🧪 RECLAMATION
