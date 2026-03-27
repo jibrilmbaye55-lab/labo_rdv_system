@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Laboratoire Médical</title>
+
+<style>
+* {margin:0;padding:0;box-sizing:border-box;}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI';
+    height:100vh;
+    background: linear-gradient(135deg,#0f2027,#2c5364);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    color:white;
+}
+
+.card {
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(20px);
+    border-radius: 25px;
+    padding: 40px;
+    width: 420px;
+    text-align: center;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+    animation: fadeIn 1s ease;
+}
+
+@keyframes fadeIn {
+    from {opacity:0; transform:translateY(30px);}
+    to {opacity:1; transform:translateY(0);}
+}
+
+.logos {
+    display:flex;
+    justify-content:center;
+    gap:15px;
+    margin-bottom:20px;
+}
+
+.logos img {
+    height:45px;
+    background:white;
+    padding:5px;
+    border-radius:10px;
+}
+
+h1 {
+    font-size:26px;
+    margin-bottom:10px;
+}
+
+.subtitle {
+    font-size:13px;
+    opacity:0.7;
+    margin-bottom:25px;
+}
+
+.message {
+    background: rgba(255,255,255,0.1);
+    padding:15px;
+    border-radius:12px;
+    margin-bottom:25px;
+}
+
+.btn {
+    display:block;
+    width:100%;
+    padding:14px;
+    margin:10px 0;
+    border-radius:15px;
+    text-decoration:none;
+    font-weight:bold;
+    transition:0.3s;
+}
+
+.btn-rdv {
+    background: linear-gradient(135deg,#0072ff,#00c6ff);
+    color:white;
+}
+
+.btn-reclamation {
+    background:white;
+    color:#333;
+}
+
+.btn:hover {
+    transform: scale(1.05);
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<div class="logos">
+<img src="{{ url_for('static', filename='logo_labo.png') }}">
+<img src="{{ url_for('static', filename='logo_coud.png') }}">
+</div>
+
+<h1>🧪 Laboratoire Médical</h1>
+<div class="subtitle">Service rapide • sécurisé • confidentiel</div>
+
+<div class="message">
+🎓 Étudiants de l'Université Cheikh Anta Diop de Dakar,<br>
+Accédez à vos analyses sans attente.
+</div>
+
+<a href="/rdv" class="btn btn-rdv">📅 Prendre un Rendez-vous</a>
+<a href="/reclamation" class="btn btn-reclamation">🧾 Faire une Réclamation</a>
+
+</div>
+
+</body>
+</html>

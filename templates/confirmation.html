@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Confirmation</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI';
+    background: linear-gradient(135deg,#0f2027,#2c5364);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* CARD */
+.ticket {
+    width: 400px;
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(20px);
+    padding: 30px;
+    border-radius: 22px;
+    text-align: center;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+    color: white;
+    animation: fadeIn 0.8s ease;
+}
+
+@keyframes fadeIn {
+    from {opacity:0; transform:translateY(30px);}
+    to {opacity:1; transform:translateY(0);}
+}
+
+h2 {
+    color: #00ff9d;
+    margin-bottom: 20px;
+}
+
+/* NUMERO TICKET 🔥 */
+.numero {
+    background: linear-gradient(135deg,#00c6ff,#0072ff);
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    font-size: 15px;
+    letter-spacing: 1px;
+}
+
+/* INFO */
+.info {
+    background: rgba(255,255,255,0.1);
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.info p {
+    margin: 8px 0;
+}
+
+/* SEPARATION */
+hr {
+    border: none;
+    height: 1px;
+    background: rgba(255,255,255,0.2);
+    margin: 20px 0;
+}
+
+/* NOTE */
+.note {
+    font-size: 13px;
+    opacity: 0.8;
+}
+
+/* BOUTONS */
+.btn {
+    display: block;
+    margin-top: 15px;
+    padding: 14px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+/* PDF */
+.btn-pdf {
+    background: linear-gradient(135deg,#28a745,#00d97e);
+    color: white;
+}
+
+/* HOME */
+.btn-home {
+    background: white;
+    color: #333;
+}
+
+/* HOVER */
+.btn:hover {
+    transform: scale(1.05);
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="ticket">
+
+<h2>✅ Rendez-vous confirmé</h2>
+
+<!-- 🔥 NUMERO -->
+<div class="numero">
+🎟 Numéro : {{ numero }}
+</div>
+
+<div class="info">
+    <p><strong>Nom :</strong> {{ nom }} {{ prenom }}</p>
+    <p><strong>Date :</strong> {{ date }}</p>
+    <p><strong>Heure :</strong> {{ heure }}</p>
+</div>
+
+<hr>
+
+<p class="note">Merci de vous présenter à l'heure avec votre ticket.</p>
+
+<!-- PDF -->
+<a href="/download/{{ pdf }}" class="btn btn-pdf">
+📄 Télécharger votre ticket PDF
+</a>
+
+<!-- HOME -->
+<a href="/" class="btn btn-home">
+🏠 Retour à l'accueil
+</a>
+
+</div>
+
+</body>
+</html>

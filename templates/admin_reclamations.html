@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Admin Réclamations</title>
+
+<style>
+body {
+    font-family: 'Segoe UI';
+    background: linear-gradient(135deg,#0f2027,#2c5364);
+    color: white;
+    padding: 30px;
+}
+
+/* TITRE */
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* STATS */
+.stats {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 25px;
+}
+
+.card {
+    background: rgba(255,255,255,0.1);
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+    width: 22%;
+}
+
+.card h3 {
+    margin-bottom: 5px;
+}
+
+/* FILTRE + SEARCH */
+.controls {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+input, select {
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+}
+
+/* TABLE */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(20px);
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+th, td {
+    padding: 12px;
+    text-align: center;
+}
+
+th {
+    background: rgba(255,255,255,0.15);
+}
+
+tr:nth-child(even) {
+    background: rgba(255,255,255,0.05);
+}
+
+/* BADGE */
+.badge {
+    padding: 5px 10px;
+    border-radius: 10px;
+    font-size: 12px;
+}
+
+.normal { background: #3498db; }
+.urgent { background: #e74c3c; }
+
+/* STATUT */
+.attente { color: orange; }
+.traite { color: #00ff9d; }
+
+/* BTN */
+.btn {
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: linear-gradient(135deg,#00c6ff,#0072ff);
+    color: white;
+    text-decoration: none;
+}
+
+/* HOVER */
+.btn:hover {
+    opacity: 0.8;
+}
+</style>
+</head>
+
+<body>
+
+<h2>📊 Dashboard Réclamations PRO</h2>
+
+<!-- 🔥 STATS -->
+<div class="stats">
+    <div class="card">
+        <h3>Total</h3>
+        <p id="total"></p>
+    </div>
+    <div class="card">
+        <h3>Urgent</h3>
+        <p id="urgent"></p>
+    </div>
+    <div class="card">
+        <h3>En attente</h3>
+        <p id="attente"></p>
+    </div>
+    <div class="card">
+        <h3>Traité</h3>
+        <p id="traite"></p>
+    </div>
+</div>
+
+<!-- 🔥 CONTROLS -->
+<div class="controls">
+    <input type="text" id="search" placeholder="🔍 Rechercher...">
+
+    <select id="filter">
+        <option value="all">Tous</option>
+        <option value="Urgent">Urgent</option>
+        <option value="Normal">Normal</option>
+        <option value="Traité">Traité</option>
+    </select>
+</div>
+
+<!-- 🔥 TABLE -->
+<table id="table">
+<tr>
+<th>Nom</th>
+<th>Téléphone</th>
+<th>Type</th>
+<th>Priorité</th>
+<th>Message</th>
+<th>Date</th>
+<th>Statut</th>
+<th>Action</th>
+</tr>
+
+{% for r in data %}
+<tr>
+<td>{{ r[1] }}</td>
+<td>{{ r[2] }}</td>
+<td>{{ r[3] }}</td>
+
+<td class="priority">
+<span class="badge {% if r[4]=='Urgent' %}urgent{% else %}normal{% endif %}">
+{{ r[4] }}
+</span>
+</td>
+
+<td>{{ r[5] }}</td>
+<td>{{ r[6] }}</td>
+
+<td class="status {% if r[7]=='Traité' %}traite{% else %}attente{% endif %}">
+{{ r[7] }}
+</td>
+
+<td>
+{% if r[7] != 'Traité' %}
+<a href="/traiter_reclamation/{{ r[0] }}" class="btn">✔</a>
+{% else %}
+✔
+{% endif %}
+</td>
+
+</tr>
+{% endfor %}
+
+</table>
+
+<script>
+// 🔍 SEARCH
+document.getElementById("search").addEventListener("keyup", function() {
+    let value = this.value.toLowerCase();
+    let rows = document.querySelectorAll("#table tr");
+
+    rows.forEach((row, index) => {
+        if (index === 0) return;
+        row.style.display = row.innerText.toLowerCase().includes(value) ? "" : "none";
+    });
+});
+
+// 🔥 FILTER
+document.getElementById("filter").addEventListener("change", function() {
+    let value = this.value;
+    let rows = document.querySelectorAll("#table tr");
+
+    rows.forEach((row, index) => {
+        if (index === 0) return;
+
+        let priority = row.querySelector(".priority").innerText;
+        let status = row.querySelector(".status").innerText;
+
+        if (value === "all") {
+            row.style.display = "";
+        } else if (value === "Traité") {
+            row.style.display = status.includes("Traité") ? "" : "none";
+        } else {
+            row.style.display = priority.includes(value) ? "" : "none";
+        }
+    });
+});
+
+// 📊 STATS
+let rows = document.querySelectorAll("#table tr");
+let total = rows.length - 1;
+let urgent = 0;
+let attente = 0;
+let traite = 0;
+
+rows.forEach((row, index) => {
+    if (index === 0) return;
+
+    let priority = row.querySelector(".priority").innerText;
+    let status = row.querySelector(".status").innerText;
+
+    if (priority.includes("Urgent")) urgent++;
+    if (status.includes("Traité")) traite++;
+    else attente++;
+});
+
+document.getElementById("total").innerText = total;
+document.getElementById("urgent").innerText = urgent;
+document.getElementById("attente").innerText = attente;
+document.getElementById("traite").innerText = traite;
+</script>
+
+</body>
+</html>

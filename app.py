@@ -1,203 +1,318 @@
-from flask import Flask, render_template, request, redirect, session, send_from_directory, send_file
 import sqlite3
-import os
+from flask import Flask, render_template, request, redirect, send_file, session
 from datetime import datetime, timedelta
+import os
 from werkzeug.utils import secure_filename
 
-from reportlab.platypus import SimpleDocTemplate, Paragraph
+# PDF
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, Table, TableStyle
+from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 
+# =========================
+# INITIALISATION APP
+# =========================
 app = Flask(__name__)
 app.secret_key = "secret123"
 
-DB_NAME = "database.db"
+UPLOAD_FOLDER = 'static/uploads'
+PDF_FOLDER = 'static/pdfs'
 
-UPLOAD_FOLDER = "uploads"
-PDF_FOLDER = "pdfs"
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['PDF_FOLDER'] = PDF_FOLDER
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(PDF_FOLDER, exist_ok=True)
 
 # =========================
-# 🔌 DB
-# =========================
-def get_db_connection():
-    conn = sqlite3.connect(DB_NAME)
-    conn.row_factory = sqlite3.Row
-    return conn
-
-# =========================
-# 🧱 INIT DB
+# DATABASE
 # =========================
 def init_db():
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS rendezvous (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        type_patient TEXT,
         nom TEXT,
         prenom TEXT,
-        type_patient TEXT,
         adresse TEXT,
         telephone TEXT,
         matricule TEXT,
-        date_rdv TEXT,
-        numero_ordre INTEGER,
         bulletin TEXT,
-        date_creation TEXT
+        date_rdv TEXT,
+        heure_rdv TEXT
     )
     """)
-
-    try:
-        cursor.execute("ALTER TABLE rendezvous ADD COLUMN heure TEXT")
-    except:
-        pass
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS reclamations (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nom TEXT,
         telephone TEXT,
+        type_reclamation TEXT,
+        priorite TEXT,
         message TEXT,
-        urgence TEXT,
-        service TEXT,
-        date_creation TEXT
+        date TEXT,
+        statut TEXT DEFAULT 'En attente'
     )
     """)
 
     conn.commit()
     conn.close()
 
-# 🔥 IMPORTANT (Render)
 init_db()
 
 # =========================
-# 🏠 HOME
+# PDF AVEC NUMERO 🔥
 # =========================
-@app.route("/")
-def home():
-    return redirect("/labo")
+def generate_pdf(nom, prenom, date, heure, numero_ticket):
+    filename = f"ticket_{nom}_{int(datetime.now().timestamp())}.pdf"
+    filepath = os.path.join(app.config['PDF_FOLDER'], filename)
 
-# =========================
-# ✅ PAGE LABO (FIX FINAL)
-# =========================
-@app.route("/labo")
-def labo_home():
-    return render_template("labo_home.html")
+    doc = SimpleDocTemplate(filepath)
+    styles = getSampleStyleSheet()
+    elements = []
 
-# =========================
-# 🧪 RECLAMATION
-# =========================
-@app.route("/reclamation")
-def reclamation():
-    return render_template("form_labo.html")
+    logo_path = "static/logo_labo.png"
+    if os.path.exists(logo_path):
+        elements.append(Image(logo_path, width=80, height=50))
 
-@app.route("/submit_reclamation", methods=["POST"])
-def submit_reclamation():
+    elements.append(Spacer(1, 10))
+    elements.append(Paragraph("<b>LABORATOIRE MEDICAL COUD</b>", styles['Title']))
+    elements.append(Spacer(1, 20))
 
-    if not request.form.get("telephone") or not request.form.get("message"):
-        return "❌ Téléphone et message obligatoires"
+    elements.append(Paragraph(f"<b>Numéro : {numero_ticket}</b>", styles['Normal']))
+    elements.append(Spacer(1, 15))
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    data = [
+        ["Nom", f"{nom} {prenom}"],
+        ["Date", date],
+        ["Heure", heure],
+    ]
 
-    cursor.execute("""
-    INSERT INTO reclamations
-    (nom, telephone, message, urgence, service, date_creation)
-    VALUES (?, ?, ?, ?, ?, ?)
-    """, (
-        request.form.get("nom"),
-        request.form.get("telephone"),
-        request.form.get("message"),
-        request.form.get("urgence"),
-        request.form.get("service"),
-        datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    ))
+    table = Table(data, colWidths=[100, 250])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (0,-1), colors.lightblue),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+    ]))
 
-    conn.commit()
-    conn.close()
+    elements.append(table)
 
-    return "✅ Réclamation envoyée avec succès"
+    elements.append(Spacer(1, 20))
+    elements.append(Paragraph("Merci de vous presenter a l'heure.", styles['Normal']))
+
+    doc.build(elements)
+
+    return filename
 
 # =========================
-# 📅 RDV
+# LOGIN
 # =========================
-@app.route("/rendezvous")
-def rendezvous():
-    return render_template("rendezvous.html")
-
-@app.route("/submit_rdv", methods=["POST"])
-def submit_rdv():
-
-    data = request.form
-
-    if not all([data.get("nom"), data.get("prenom"), data.get("type_patient"),
-                data.get("adresse"), data.get("telephone")]):
-        return "❌ Tous les champs sont obligatoires"
-
-    file = request.files.get("bulletin")
-
-    if not file or file.filename == "":
-        return "❌ Bulletin obligatoire"
-
-    filename = secure_filename(file.filename)
-    unique_name = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{filename}"
-    filepath = os.path.join(UPLOAD_FOLDER, unique_name)
-    file.save(filepath)
-
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    # Créneaux 8h → 11h
-    slots = []
-    for h in range(8, 11):
-        for m in [0, 15, 30, 45]:
-            slots.append(f"{h:02d}:{m:02d}")
-
-    date_rdv = datetime.now().date()
-
-    while True:
-        for slot in slots:
-            cursor.execute("""
-            SELECT COUNT(*) as total FROM rendezvous
-            WHERE date_rdv=? AND heure=?
-            """, (str(date_rdv), slot))
-
-            if cursor.fetchone()["total"] == 0:
-                heure_rdv = slot
-                break
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        if request.form.get('username') == "admin" and request.form.get('password') == "1234":
+            session['admin'] = True
+            return redirect('/admin')
         else:
+            return "❌ Mauvais identifiants"
+    return render_template("login.html")
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect('/login')
+
+# =========================
+# ACCUEIL
+# =========================
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+# =========================
+# RDV INTELLIGENT 🔥🔥🔥
+# =========================
+@app.route('/rdv', methods=['GET', 'POST'])
+def rdv():
+    if request.method == 'POST':
+
+        type_patient = request.form.get('type_patient')
+        nom = request.form.get('nom')
+        prenom = request.form.get('prenom')
+        adresse = request.form.get('adresse')
+        telephone = request.form.get('telephone')
+        matricule = request.form.get('matricule')
+
+        if type_patient in ["Etudiant", "Personnel COUD"] and not matricule:
+            return "❌ Matricule obligatoire"
+
+        file = request.files.get('bulletin')
+        if not file:
+            return "❌ Bulletin obligatoire"
+
+        filename = secure_filename(file.filename)
+        unique_name = f"{int(datetime.now().timestamp())}_{filename}"
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], unique_name))
+
+        conn = sqlite3.connect("database.db")
+        cursor = conn.cursor()
+
+        # 🔥 JOUR SUIVANT
+        date_rdv = datetime.now() + timedelta(days=1)
+
+        # 🔥 PAS WEEKEND
+        while date_rdv.weekday() >= 5:
             date_rdv += timedelta(days=1)
-            continue
-        break
+
+        # 🔥 TROUVER JOUR DISPONIBLE
+        while True:
+            date_str = date_rdv.strftime("%Y-%m-%d")
+
+            cursor.execute("SELECT COUNT(*) FROM rendezvous WHERE date_rdv=?", (date_str,))
+            count = cursor.fetchone()[0]
+
+            if count < 100:
+                break
+            else:
+                date_rdv += timedelta(days=1)
+                while date_rdv.weekday() >= 5:
+                    date_rdv += timedelta(days=1)
+
+        # 🔥 HEURE ENTRE 08H - 11H
+        start_time = datetime.strptime("08:00", "%H:%M")
+        rdv_time = start_time + timedelta(minutes=2 * count)
+        heure = rdv_time.strftime("%H:%M")
+
+        # 🔥 NUMERO UNIQUE
+        numero_ticket = f"RDV-{date_str.replace('-', '')}-{str(count+1).zfill(3)}"
+
+        cursor.execute("""
+        INSERT INTO rendezvous 
+        (type_patient, nom, prenom, adresse, telephone, matricule, bulletin, date_rdv, heure_rdv)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (type_patient, nom, prenom, adresse, telephone, matricule, unique_name, date_str, heure))
+
+        conn.commit()
+        conn.close()
+
+        pdf = generate_pdf(nom, prenom, date_str, heure, numero_ticket)
+
+        return render_template(
+            "confirmation.html",
+            nom=nom,
+            prenom=prenom,
+            date=date_str,
+            heure=heure,
+            numero=numero_ticket,
+            pdf=pdf
+        )
+
+    return render_template('rdv.html')
+
+# =========================
+# DOWNLOAD PDF
+# =========================
+@app.route('/download/<filename>')
+def download(filename):
+    return send_file(os.path.join(app.config['PDF_FOLDER'], filename), as_attachment=True)
+
+# =========================
+# RECLAMATIONS
+# =========================
+@app.route('/reclamation', methods=['GET', 'POST'])
+def reclamation():
+    if request.method == 'POST':
+        conn = sqlite3.connect("database.db")
+        cursor = conn.cursor()
+
+        cursor.execute("""
+        INSERT INTO reclamations (nom, telephone, type_reclamation, priorite, message, date)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """, (
+            request.form.get('nom'),
+            request.form.get('telephone'),
+            request.form.get('type_reclamation'),
+            request.form.get('priorite'),
+            request.form.get('message'),
+            datetime.now().strftime("%Y-%m-%d %H:%M")
+        ))
+
+        conn.commit()
+        conn.close()
+
+        return render_template("confirmation_reclamation.html", nom=request.form.get('nom'))
+
+    return render_template('reclamation.html')
+
+# =========================
+# ADMIN
+# =========================
+@app.route('/admin')
+def admin():
+
+    if not session.get('admin'):
+        return redirect('/login')
+
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM rendezvous ORDER BY date_rdv DESC, heure_rdv ASC")
+    rdvs = cursor.fetchall()
 
     cursor.execute("""
-    INSERT INTO rendezvous
-    (nom, prenom, type_patient, adresse, telephone, matricule,
-     date_rdv, heure, numero_ordre, bulletin, date_creation)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        data.get("nom"),
-        data.get("prenom"),
-        data.get("type_patient"),
-        data.get("adresse"),
-        data.get("telephone"),
-        data.get("matricule"),
-        str(date_rdv),
-        heure_rdv,
-        1,
-        unique_name,
-        datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    ))
+    SELECT * FROM reclamations
+    ORDER BY 
+        priorite='Urgent' DESC,
+        statut='En attente' DESC,
+        date DESC
+    """)
+    reclamations = cursor.fetchall()
 
+    conn.close()
+
+    return render_template("admin.html", rdvs=rdvs, reclamations=reclamations)
+
+# =========================
+# ACTIONS
+# =========================
+@app.route('/traiter_reclamation/<int:id>')
+def traiter_reclamation(id):
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+
+    cursor.execute("UPDATE reclamations SET statut='Traité' WHERE id=?", (id,))
     conn.commit()
     conn.close()
 
-    return f"✅ RDV le {date_rdv} à {heure_rdv}"
+    return redirect('/admin')
+
+@app.route('/delete_rdv/<int:id>')
+def delete_rdv(id):
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+
+    cursor.execute("DELETE FROM rendezvous WHERE id=?", (id,))
+    conn.commit()
+    conn.close()
+
+    return redirect('/admin')
+
+@app.route('/delete_reclamation/<int:id>')
+def delete_reclamation(id):
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+
+    cursor.execute("DELETE FROM reclamations WHERE id=?", (id,))
+    conn.commit()
+    conn.close()
+
+    return redirect('/admin')
 
 # =========================
-# 🚀 RUN
+# RUN
 # =========================
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+if __name__ == '__main__':
+    app.run(debug=True)
