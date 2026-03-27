@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard RDV</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            margin-top: 15px;
+        }
+
+        th {
+            background: #28a745;
+            color: white;
+        }
+
+        td, th {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        .topbar {
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        input {
+            padding: 10px;
+            width: 200px;
+            margin: 5px;
+        }
+
+        button {
+            padding: 10px;
+            background: #2c7be5;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1a5edb;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        a.delete {
+            color: red;
+            font-weight: bold;
+        }
+
+        a.delete:hover {
+            text-decoration: underline;
+        }
+
+        .nav {
+            margin-top: 10px;
+        }
+
+        .nav a {
+            margin: 0 10px;
+            color: #2c7be5;
+            font-weight: bold;
+        }
+
+        .whatsapp {
+            color: green;
+            font-weight: bold;
+        }
+
+        .pdf {
+            color: #6f42c1;
+            font-weight: bold;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            table {
+                font-size: 12px;
+            }
+
+            input {
+                width: 100%;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>📅 Gestion des Rendez-vous</h2>
+
+<div class="topbar">
+
+    <!-- 🔍 Recherche téléphone -->
+    <form method="GET">
+        <input type="text" name="search" placeholder="Téléphone">
+        <button type="submit">Rechercher</button>
+    </form>
+
+    <!-- 📅 Filtre par date -->
+    <form method="GET">
+        <input type="date" name="date">
+        <button type="submit">Filtrer par date</button>
+    </form>
+
+    <div class="nav">
+        <a href="/stats">📊 Statistiques</a> |
+        <a href="/admin_labo">🧪 Réclamations</a> |
+        <a href="/logout">🚪 Déconnexion</a>
+    </div>
+</div>
+
+<table>
+
+<tr>
+    <th>ID</th>
+    <th>Nom</th>
+    <th>Prénom</th>
+    <th>Téléphone</th>
+    <th>Date RDV</th>
+    <th>N°</th>
+    <th>Bulletin</th>
+    <th>PDF</th>
+    <th>WhatsApp</th>
+    <th>Action</th>
+</tr>
+
+{% for r in rdv %}
+<tr>
+    <td>{{ r["id"] }}</td>
+    <td>{{ r["nom"] }}</td>
+    <td>{{ r["prenom"] }}</td>
+    <td>{{ r["telephone"] }}</td>
+    <td>{{ r["date_rdv"] }}</td>
+    <td>{{ r["numero_ordre"] }}</td>
+
+    <!-- 📄 Bulletin -->
+    <td>
+        <a href="/uploads/{{ r['bulletin'] }}" target="_blank">📄 Voir</a>
+    </td>
+
+    <!-- 🧾 PDF -->
+    <td>
+        <a class="pdf" href="/rdv_pdf/{{ r['id'] }}">
+            🧾
+        </a>
+    </td>
+
+    <!-- 📲 WhatsApp avec message -->
+    <td>
+        <a class="whatsapp"
+           href="https://wa.me/{{ r['telephone'] }}?text=Bonjour {{ r['prenom'] }} {{ r['nom'] }}, votre rendez-vous est prévu le {{ r['date_rdv'] }} avec le numéro {{ r['numero_ordre'] }}."
+           target="_blank">
+           📲
+        </a>
+    </td>
+
+    <!-- ❌ Supprimer -->
+    <td>
+        <a class="delete"
+           href="/delete_rdv/{{ r['id'] }}"
+           onclick="return confirm('Supprimer ce rendez-vous ?')">
+           ❌
+        </a>
+    </td>
+</tr>
+{% endfor %}
+
+</table>
+
+</body>
+</html>

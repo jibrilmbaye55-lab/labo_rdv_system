@@ -1,0 +1,19 @@
+<h2>🧑‍⚕️ Patients du jour</h2>
+
+<table border="1">
+<tr>
+<th>Heure</th>
+<th>Nom</th>
+<th>Prénom</th>
+<th>Téléphone</th>
+</tr>
+
+{% for r in data %}
+<tr>
+<td>{{ r["heure"] }}</td>
+<td>{{ r["nom"] }}</td>
+<td>{{ r["prenom"] }}</td>
+<td>{{ r["telephone"] }}</td>
+</tr>
+{% endfor %}
+</table>

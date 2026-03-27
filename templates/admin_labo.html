@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard Laboratoire</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f6f9;
+        }
+
+        table {
+            width: 100%;
+            background: white;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background: #2c7be5;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>📊 Réclamations Laboratoire</h2>
+
+<table>
+
+<tr>
+    <th>ID</th>
+    <th>Nom</th>
+    <th>Téléphone</th>
+    <th>Message</th>
+    <th>Urgence</th>
+    <th>Date</th>
+</tr>
+
+{% for r in reclamations %}
+<tr>
+    <td>{{ r[0] }}</td>
+    <td>{{ r[1] }}</td>
+    <td>{{ r[2] }}</td>
+    <td>{{ r[3] }}</td>
+    <td>{{ r[4] }}</td>
+    <td>{{ r[6] }}</td>
+</tr>
+{% endfor %}
+
+</table>
+
+</body>
+</html>

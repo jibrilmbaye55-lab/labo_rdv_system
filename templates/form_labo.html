@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Réclamation Laboratoire</title>
+</head>
+
+<body>
+
+<h2>🧪 Réclamation Laboratoire</h2>
+
+<form method="POST" action="/submit_reclamation">
+
+    <input type="text" name="nom" placeholder="Nom">
+
+    <input type="text" name="telephone" placeholder="Téléphone" required>
+
+    <textarea name="message" placeholder="Décrivez votre problème..." required></textarea>
+
+    <select name="urgence">
+        <option value="Faible">Faible</option>
+        <option value="Moyenne">Moyenne</option>
+        <option value="Élevée">Élevée</option>
+    </select>
+
+    <!-- IMPORTANT -->
+    <input type="hidden" name="service" value="Laboratoire">
+
+    <button type="submit">Envoyer</button>
+
+</form>
+
+</body>
+</html>
