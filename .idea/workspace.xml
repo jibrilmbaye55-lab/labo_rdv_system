@@ -2,37 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d7ece816-b466-4fef-be5a-6fc1860141a4" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/labo_rdv_system.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/generate_qr.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/logo.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/logo_coud.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/logo_labo.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/admin.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/admin_reclamations.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/confirmation.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/confirmation_reclamation.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/rdv.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/reclamation.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/labo_app.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/render.yaml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/admin_labo.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/admin_rdv.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/form_labo.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/labo_home.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/login.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/rendezvous.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/staff.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/stats.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/uploads/20260327140422_qr_reclamation_1.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/uploads/20260327141153_qr_reclamation_1.png" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,6 +21,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "jibrilmbaye55-lab"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/jibrilmbaye55-lab/labo_rdv_system.git",
+    "accountId": "8128bc1b-3621-4235-ad50-7240d5e48bd0"
+  }
+}]]></component>
   <component name="ProjectColorInfo"><![CDATA[{
   "associatedIndex": 1
 }]]></component>
@@ -124,7 +108,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1774631016287</updated>
-      <workItem from="1774631018035" duration="9452000" />
+      <workItem from="1774631018035" duration="10560000" />
     </task>
     <servers />
   </component>

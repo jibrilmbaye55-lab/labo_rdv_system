@@ -13,10 +13,13 @@ from reportlab.lib.styles import getSampleStyleSheet
 # INITIALISATION APP
 # =========================
 app = Flask(__name__)
-app.secret_key = "secret123"
+app.secret_key = os.environ.get("SECRET_KEY", "secret123")
 
-UPLOAD_FOLDER = 'static/uploads'
-PDF_FOLDER = 'static/pdfs'
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static/uploads')
+PDF_FOLDER = os.path.join(BASE_DIR, 'static/pdfs')
+DB_PATH = os.path.join(BASE_DIR, "database.db")
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['PDF_FOLDER'] = PDF_FOLDER
@@ -27,8 +30,11 @@ os.makedirs(PDF_FOLDER, exist_ok=True)
 # =========================
 # DATABASE
 # =========================
+def get_db():
+    return sqlite3.connect(DB_PATH)
+
 def init_db():
-    conn = sqlite3.connect("database.db")
+    conn = get_db()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -65,7 +71,7 @@ def init_db():
 init_db()
 
 # =========================
-# PDF AVEC NUMERO 🔥
+# PDF
 # =========================
 def generate_pdf(nom, prenom, date, heure, numero_ticket):
     filename = f"ticket_{nom}_{int(datetime.now().timestamp())}.pdf"
@@ -75,7 +81,7 @@ def generate_pdf(nom, prenom, date, heure, numero_ticket):
     styles = getSampleStyleSheet()
     elements = []
 
-    logo_path = "static/logo_labo.png"
+    logo_path = os.path.join(BASE_DIR, "static/logo_labo.png")
     if os.path.exists(logo_path):
         elements.append(Image(logo_path, width=80, height=50))
 
@@ -133,7 +139,7 @@ def index():
     return render_template('index.html')
 
 # =========================
-# RDV INTELLIGENT 🔥🔥🔥
+# RDV
 # =========================
 @app.route('/rdv', methods=['GET', 'POST'])
 def rdv():
@@ -157,17 +163,14 @@ def rdv():
         unique_name = f"{int(datetime.now().timestamp())}_{filename}"
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], unique_name))
 
-        conn = sqlite3.connect("database.db")
+        conn = get_db()
         cursor = conn.cursor()
 
-        # 🔥 JOUR SUIVANT
         date_rdv = datetime.now() + timedelta(days=1)
 
-        # 🔥 PAS WEEKEND
         while date_rdv.weekday() >= 5:
             date_rdv += timedelta(days=1)
 
-        # 🔥 TROUVER JOUR DISPONIBLE
         while True:
             date_str = date_rdv.strftime("%Y-%m-%d")
 
@@ -181,12 +184,10 @@ def rdv():
                 while date_rdv.weekday() >= 5:
                     date_rdv += timedelta(days=1)
 
-        # 🔥 HEURE ENTRE 08H - 11H
         start_time = datetime.strptime("08:00", "%H:%M")
         rdv_time = start_time + timedelta(minutes=2 * count)
         heure = rdv_time.strftime("%H:%M")
 
-        # 🔥 NUMERO UNIQUE
         numero_ticket = f"RDV-{date_str.replace('-', '')}-{str(count+1).zfill(3)}"
 
         cursor.execute("""
@@ -225,7 +226,7 @@ def download(filename):
 @app.route('/reclamation', methods=['GET', 'POST'])
 def reclamation():
     if request.method == 'POST':
-        conn = sqlite3.connect("database.db")
+        conn = get_db()
         cursor = conn.cursor()
 
         cursor.execute("""
@@ -252,11 +253,10 @@ def reclamation():
 # =========================
 @app.route('/admin')
 def admin():
-
     if not session.get('admin'):
         return redirect('/login')
 
-    conn = sqlite3.connect("database.db")
+    conn = get_db()
     cursor = conn.cursor()
 
     cursor.execute("SELECT * FROM rendezvous ORDER BY date_rdv DESC, heure_rdv ASC")
@@ -280,7 +280,7 @@ def admin():
 # =========================
 @app.route('/traiter_reclamation/<int:id>')
 def traiter_reclamation(id):
-    conn = sqlite3.connect("database.db")
+    conn = get_db()
     cursor = conn.cursor()
 
     cursor.execute("UPDATE reclamations SET statut='Traité' WHERE id=?", (id,))
@@ -291,7 +291,7 @@ def traiter_reclamation(id):
 
 @app.route('/delete_rdv/<int:id>')
 def delete_rdv(id):
-    conn = sqlite3.connect("database.db")
+    conn = get_db()
     cursor = conn.cursor()
 
     cursor.execute("DELETE FROM rendezvous WHERE id=?", (id,))
@@ -302,7 +302,7 @@ def delete_rdv(id):
 
 @app.route('/delete_reclamation/<int:id>')
 def delete_reclamation(id):
-    conn = sqlite3.connect("database.db")
+    conn = get_db()
     cursor = conn.cursor()
 
     cursor.execute("DELETE FROM reclamations WHERE id=?", (id,))
@@ -312,7 +312,8 @@ def delete_reclamation(id):
     return redirect('/admin')
 
 # =========================
-# RUN
+# RUN (RENDER COMPATIBLE)
 # =========================
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
